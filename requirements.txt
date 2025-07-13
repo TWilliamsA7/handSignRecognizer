@@ -1,0 +1,8 @@
+opencv-python
+numpy
+mediapipe
+tensorflow     
+scikit-learn
+matplotlib      
+fastapi
+uvicorn
