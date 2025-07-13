@@ -4,3 +4,6 @@
 # Data Files
 data/
 notebooks/
+
+# PyCache Files
+__pycache__/
