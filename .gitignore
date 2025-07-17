@@ -3,7 +3,13 @@
 
 # Data Files
 data/
-notebooks/
 
 # PyCache Files
 __pycache__/
+
+# Jupyter checkpoint files
+.ipynb_checkpoints/
+*.nbconvert.*
+
+# ML Models
+models/

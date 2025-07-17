@@ -1,8 +1,9 @@
 import cv2
 import os
+import time
 from .utils import ensure_dir
 
-def capture_images(label: str, num_samples: int = 100):
+def capture_images(label: str, num_samples: int = 100, auto_capture: bool = False):
     # Create a directory to save the image data/raw/label
     save_dir = os.path.join("data", "raw", label)
     ensure_dir(save_dir)
@@ -31,12 +32,14 @@ def capture_images(label: str, num_samples: int = 100):
         key = cv2.waitKey(1)
         if key == 27: # ESC
             break
-        elif key == 32: # SPACE
+        elif key == 32 or auto_capture: # SPACE
             # Create a file using the captured frame
             filepath = os.path.join(save_dir, f"{label}_{count:03d}.jpg")
             cv2.imwrite(filepath, frame)
             print(f"[✓] Saved {filepath}")
             count += 1
+            if (auto_capture):
+                time.sleep(0.10)
 
     # Remove the OpenCV instance
     cap.release()
