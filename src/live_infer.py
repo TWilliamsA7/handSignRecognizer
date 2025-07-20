@@ -6,7 +6,7 @@ from collections import deque
 pred_buffer = deque(maxlen=5)
 
 # Load model and constants
-MODEL_PATH = Path("") / "models" / "cnn_hand_sign_model_02.h5"
+MODEL_PATH = Path("") / "models" / "cnn_hand_sign_model_05.h5"
 IMG_SIZE = 128
 LABELS = ['A', 'B', 'OK']
 model = tf.keras.models.load_model(MODEL_PATH)

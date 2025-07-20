@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import os
+import random
 from .utils import ensure_dir
 
 mp_hands = mp.solutions.hands
@@ -66,3 +67,38 @@ def preprocess_all_images(raw_dir="data/raw", out_dir="data/processed"):
             save_path = os.path.join(dst_folder, fname)
             cv2.imwrite(save_path, cropped)
             print(f"[✓] Saved preprocessed {save_path}")
+
+
+def preprocess_label(label, raw_dir="data/raw", out_dir="data/processed"):
+    src_folder = os.path.join(raw_dir, label)
+    # Create the destination folder if it does not exist
+    dst_folder = os.path.join(out_dir, label)
+    ensure_dir(dst_folder)
+
+    for fname in os.listdir(src_folder):
+        if not fname.lower().endswith((".jpg", ".jpeg", ".png")):
+            continue
+
+        # Read the current image file
+        img_path = os.path.join(src_folder, fname)
+        img = cv2.imread(img_path)
+
+        # Extract the hand region
+        cropped = extract_hand_region(img)
+        if cropped is None:
+            print(f"[!] Skipping {fname} (no hand detected)")
+            continue
+
+        save_path = os.path.join(dst_folder, fname)
+        cv2.imwrite(save_path, cropped)
+        print(f"[✓] Saved preprocessed {save_path}")
+
+
+
+    
+
+
+
+    
+
+    
