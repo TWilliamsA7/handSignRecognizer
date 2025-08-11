@@ -2,45 +2,47 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import os
-import random
 from .utils import ensure_dir
 
 mp_hands = mp.solutions.hands
 
-def extract_hand_region(image: np.ndarray, target_size=(128, 128)):
+def extract_hand_region(image, target_size=(128,128), pad_ratio=0.3):
+    h, w = image.shape[:2]
     with mp_hands.Hands(static_image_mode=True, max_num_hands=1) as hands:
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        result = hands.process(image_rgb)
+        res = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    if not res.multi_hand_landmarks:
+        return None
 
-        if not result.multi_hand_landmarks:
-            return None # no hand detected
-        
-        # Get Bounding Box from landmarks
-        h, w, _ = image.shape
-        x_min = w
-        y_min = h
-        x_max = y_max = 0
+    lm = res.multi_hand_landmarks[0].landmark
+    xs = [int(l.x * w) for l in lm]
+    ys = [int(l.y * h) for l in lm]
+    x_min, x_max = min(xs), max(xs)
+    y_min, y_max = min(ys), max(ys)
 
-        for landmark in result.multi_hand_landmarks[0].landmark:
-            x, y = int(landmark.x * w), int(landmark.y * h)
-            x_min = min(x_min, x)
-            y_min = min(y_min, y)
-            x_max = max(x_max, x)
-            y_max = max(y_max, y)
+    # add padding proportional to bbox size
+    bw = x_max - x_min
+    bh = y_max - y_min
+    pad = int(max(bw, bh) * pad_ratio)
+    x1 = max(0, x_min - pad)
+    y1 = max(0, y_min - pad)
+    x2 = min(w, x_max + pad)
+    y2 = min(h, y_max + pad)
 
-        # Add padding
-        padding = 20
-        x_min = max(0, x_min - padding)
-        y_min = max(0, y_min - padding)
-        x_max = min(w, x_max + padding)
-        y_max = min(h, y_max + padding)
+    crop = image[y1:y2, x1:x2]
 
-        # Crop the hand and resize to the target_size
-        hand_crop = image[y_min:y_max, x_min:x_max]
-        hand_resized = cv2.resize(hand_crop, target_size)
+    # ensure square crop by padding borders if needed
+    ch, cw = crop.shape[:2]
+    if ch == 0 or cw == 0:
+        return None
+    size = max(ch, cw)
+    square = np.zeros((size, size, 3), dtype=crop.dtype)
+    y_off = (size - ch) // 2
+    x_off = (size - cw) // 2
+    square[y_off:y_off+ch, x_off:x_off+cw] = crop
 
-        # Return the properly sized cropped image of the hand
-        return hand_resized
+    resized = cv2.resize(square, target_size)
+    # convert to RGB for training pipeline if needed
+    return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
     
 
 def preprocess_all_images(raw_dir="data/raw", out_dir="data/processed"):

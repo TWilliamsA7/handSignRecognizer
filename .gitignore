@@ -3,6 +3,7 @@
 
 # Data Files
 data/
+output/
 
 # PyCache Files
 __pycache__/
