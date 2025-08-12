@@ -1,1 +1,1 @@
-labels = ['A', 'B', 'OK']
+labels = ['A', 'B', 'OK', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
